@@ -4,6 +4,7 @@ import { auth } from "./auth.js";
 import usersRoute from "./routes/users.js";
 import tagsRoute from "./routes/tags.js";
 import issuesRoute from "./routes/issues.js";
+import { convertHeaders } from "./middleware.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import {
   healthCheckHandler,
@@ -39,13 +40,23 @@ export async function buildApp(
       fastify.post("/sign-up/email", async (request, reply) => {
         try {
           // First, create the user through Better Auth
+          const authHeaders = new Headers();
+          for (const [key, value] of Object.entries(request.headers)) {
+            if (value) {
+              authHeaders.set(
+                key,
+                Array.isArray(value) ? value.join(", ") : value
+              );
+            }
+          }
+          authHeaders.set("content-type", "application/json");
+
+          const authBaseUrl = process.env.BETTER_AUTH_BASE_URL || `http://localhost:${process.env.PORT || "3005"}`;
           const authRequest = new Request(
-            `http://localhost:3000/api/auth/sign-up/email`,
+            `${authBaseUrl}/api/auth/sign-up/email`,
             {
               method: "POST",
-              headers: {
-                "content-type": "application/json",
-              },
+              headers: authHeaders,
               body: JSON.stringify(request.body),
             }
           );
@@ -59,9 +70,10 @@ export async function buildApp(
 
             // Create API key for the new user
             try {
+              const safeKeyName = `${userData.user.name.slice(0, 20)} Key`;
               const apiKeyResult = await auth.api.createApiKey({
                 body: {
-                  name: `${userData.user.name}'s API Key`,
+                  name: safeKeyName,
                   userId: userData.user.id,
                   metadata: {
                     createdAt: new Date().toISOString(),
@@ -125,21 +137,10 @@ export async function buildApp(
       // Custom endpoint to generate a new API key (invalidates existing ones)
       fastify.post("/generate-api-key", async (request, reply) => {
         try {
-          // Get the session to verify user is authenticated
-          const authRequest = new Request(
-            `http://localhost:3000/api/auth/get-session`,
-            {
-              method: "GET",
-              headers: {
-                cookie: request.headers.cookie || "",
-              },
-            }
-          );
+          const headers = convertHeaders(request.headers);
+          const session = await auth.api.getSession({ headers });
 
-          const sessionResponse = await auth.handler(authRequest);
-          const sessionData = await sessionResponse.json();
-
-          if (!sessionResponse.ok || !sessionData.user) {
+          if (!session?.user) {
             reply.status(401).send({
               error: "Unauthorized",
               code: "UNAUTHORIZED",
@@ -147,13 +148,11 @@ export async function buildApp(
             return;
           }
 
-          const userId = sessionData.user.id;
+          const userId = session.user.id;
 
           // First, get existing API keys for this user
           const existingKeys = await auth.api.listApiKeys({
-            headers: {
-              cookie: request.headers.cookie || "",
-            },
+            headers,
           });
 
           // Delete all existing API keys for this user
@@ -175,10 +174,10 @@ export async function buildApp(
             }
           }
 
-          // Create a new API key
+          const safeKeyName = `${session.user.name.slice(0, 20)} Key`;
           const apiKeyResult = await auth.api.createApiKey({
             body: {
-              name: `${sessionData.user.name}'s API Key`,
+              name: safeKeyName,
               userId: userId,
               metadata: {
                 createdAt: new Date().toISOString(),
@@ -188,7 +187,7 @@ export async function buildApp(
           });
 
           console.log(
-            `New API key generated for user ${sessionData.user.name}: ${apiKeyResult?.start || "created"}`
+            `New API key generated for user ${session.user.name}: ${apiKeyResult?.start || "created"}`
           );
 
           reply.send({
@@ -214,8 +213,8 @@ export async function buildApp(
       // Handle all other auth routes normally
       fastify.all("/*", async (request, reply) => {
         try {
-          // Construct the full URL
-          const testUrl = `http://localhost:3000${request.url}`;
+          const authBaseUrl = process.env.BETTER_AUTH_BASE_URL || `http://localhost:${process.env.PORT || "3005"}`;
+          const testUrl = `${authBaseUrl}${request.url}`;
 
           // Convert Fastify headers to Headers object
           const headers = new Headers();
@@ -300,8 +299,11 @@ export async function buildApp(
 // Start the server if this file is run directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   try {
+    const port = parseInt(process.env.PORT || "3005", 10);
+    const host = process.env.HOST || "0.0.0.0";
     const app = await buildApp();
-    await app.listen({ port: 3000, host: "0.0.0.0" });
+    await app.listen({ port, host });
+    console.log(`Server listening on http://${host}:${port}`);
   } catch (err) {
     console.error(err);
     process.exit(1);

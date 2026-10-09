@@ -7,7 +7,7 @@ export function useApiCall<T>() {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
-  const { toast } = useToast();
+  const toast = useToast();
 
   const execute = useCallback(
     async (
@@ -77,7 +77,13 @@ export function useApiCall<T>() {
 // Hook specifically for paginated data
 export function usePaginatedApiCall<T>() {
   const [data, setData] = useState<T[]>([]);
-  const [pagination, setPagination] = useState({
+  interface PaginationState {
+    page: number;
+    totalPages: number;
+    totalItems: number;
+    limit: number;
+  }
+  const [pagination, setPagination] = useState<PaginationState>({
     page: 1,
     totalPages: 1,
     totalItems: 0,
@@ -85,14 +91,14 @@ export function usePaginatedApiCall<T>() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
-  const { toast } = useToast();
+  const toast = useToast();
 
   const execute = useCallback(
     async (
-      apiCall: () => Promise<{ data: T[]; pagination: typeof pagination }>,
+      apiCall: () => Promise<{ data: T[]; pagination: PaginationState }>,
       options?: {
         append?: boolean;
-        onSuccess?: (data: T[], pagination: typeof pagination) => void;
+        onSuccess?: (data: T[], pagination: PaginationState) => void;
         onError?: (error: ApiError) => void;
         showErrorToast?: boolean;
       }
@@ -171,7 +177,7 @@ export function usePaginatedApiCall<T>() {
 export function useApiForm<T, U>() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
-  const { toast } = useToast();
+  const toast = useToast();
 
   const submit = useCallback(
     async (
@@ -240,7 +246,7 @@ export function useApiForm<T, U>() {
 export function useOptimisticUpdate<T>() {
   const [optimisticData, setOptimisticData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const toast = useToast();
 
   const executeWithOptimisticUpdate = useCallback(
     async (

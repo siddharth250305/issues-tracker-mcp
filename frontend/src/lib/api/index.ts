@@ -8,7 +8,21 @@ import type {
   IssueFilters,
 } from "@/types";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number = 500) {
+    super(message);
+    this.status = status;
+    this.name = "ApiError";
+  }
+}
+
+const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
+const API_BASE_URL = configuredApiUrl
+  ? configuredApiUrl.endsWith("/api")
+    ? configuredApiUrl
+    : `${configuredApiUrl}/api`
+  : "/api";
 
 // Create axios instance with default config
 export const api = axios.create({
@@ -59,7 +73,7 @@ export const authApi = {
   },
 
   generateNewApiKey: async () => {
-    const response = await api.post("/auth/generate-api-key");
+    const response = await api.post("/auth/generate-api-key", {});
     return response.data;
   },
 };

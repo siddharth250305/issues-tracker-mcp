@@ -98,12 +98,14 @@ describe("Authentication Flow", () => {
         },
         headers: {
           "content-type": "application/json",
+          origin: "http://localhost:5173",
         },
       });
 
       // BetterAuth should handle this - we just want to make sure the route exists
       // and doesn't return a 404
       expect(response.statusCode).not.toBe(404);
+      expect(response.statusCode).not.toBe(403);
     });
 
     it("should respond to sign in endpoint", async () => {

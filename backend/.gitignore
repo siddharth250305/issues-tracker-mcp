@@ -8,11 +8,20 @@ yarn-error.log*
 dist/
 build/
 
+# Database / SQLite
+*.sqlite
+*.sqlite3
+*.db
+*.sqlite-journal
+*.db-journal
+
 # Environment variables
 .env
 .env.local
 .env.development
 .env.production
+!.env.template
+!.env.example
 
 # IDE
 .vscode/

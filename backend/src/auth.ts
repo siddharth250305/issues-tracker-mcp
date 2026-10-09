@@ -10,16 +10,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = path.resolve(__dirname, "..", "database.sqlite");
 const db = new Database(dbPath);
 
+const port = process.env.PORT || "3005";
+const baseUrl = process.env.BETTER_AUTH_BASE_URL
+  ? (process.env.BETTER_AUTH_BASE_URL.endsWith("/api/auth")
+      ? process.env.BETTER_AUTH_BASE_URL
+      : `${process.env.BETTER_AUTH_BASE_URL}/api/auth`)
+  : `http://localhost:${port}/api/auth`;
+
 const authConfig = {
   database: db,
-  baseURL: "http://localhost:3000/api/auth",
+  baseURL: baseUrl,
   emailAndPassword: {
     enabled: true,
   },
   trustedOrigins: [
     "http://localhost:5173",
     "http://localhost:5174",
+    "http://localhost:5175",
     "http://localhost:3000",
+    "http://localhost:3005",
   ],
   plugins: [
     apiKey({

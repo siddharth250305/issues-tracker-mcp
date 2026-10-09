@@ -53,7 +53,7 @@ const usersRoute: FastifyPluginAsync = async function (fastify) {
         count: users.length,
       };
     } catch (error) {
-      fastify.log.error("Error fetching users:", error);
+      fastify.log.error({ err: error }, "Error fetching users:");
       return reply.status(500).send({
         success: false,
         error: "Failed to fetch users",
@@ -95,7 +95,7 @@ const usersRoute: FastifyPluginAsync = async function (fastify) {
           data: user,
         };
       } catch (error) {
-        fastify.log.error("Error fetching user:", error);
+        fastify.log.error({ err: error }, "Error fetching user:");
         return reply.status(500).send({
           success: false,
           error: "Failed to fetch user",

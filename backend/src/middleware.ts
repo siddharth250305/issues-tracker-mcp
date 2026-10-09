@@ -13,7 +13,7 @@ export interface AuthenticatedRequest extends FastifyRequest {
   };
 }
 
-function convertHeaders(requestHeaders: FastifyRequest["headers"]): Headers {
+export function convertHeaders(requestHeaders: FastifyRequest["headers"]): Headers {
   const headers = new Headers();
   Object.entries(requestHeaders).forEach(([key, value]) => {
     if (value) {

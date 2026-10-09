@@ -252,7 +252,7 @@ const issuesRoute: FastifyPluginAsync = async function (fastify) {
           },
         };
       } catch (error) {
-        fastify.log.error("Error fetching issues:", error);
+        fastify.log.error({ err: error }, "Error fetching issues:");
         return reply.status(500).send({
           success: false,
           error: "Failed to fetch issues",
@@ -440,7 +440,7 @@ const issuesRoute: FastifyPluginAsync = async function (fastify) {
           message: "Issue created successfully",
         });
       } catch (error) {
-        fastify.log.error("Error creating issue:", error);
+        fastify.log.error({ err: error }, "Error creating issue:");
         return reply.status(500).send({
           success: false,
           error: "Failed to create issue",
@@ -537,7 +537,7 @@ const issuesRoute: FastifyPluginAsync = async function (fastify) {
           data: formattedIssue,
         };
       } catch (error) {
-        fastify.log.error("Error fetching issue:", error);
+        fastify.log.error({ err: error }, "Error fetching issue:");
         return reply.status(500).send({
           success: false,
           error: "Failed to fetch issue",
@@ -784,7 +784,7 @@ const issuesRoute: FastifyPluginAsync = async function (fastify) {
           message: "Issue updated successfully",
         };
       } catch (error) {
-        fastify.log.error("Error updating issue:", error);
+        fastify.log.error({ err: error }, "Error updating issue:");
         return reply.status(500).send({
           success: false,
           error: "Failed to update issue",
@@ -836,7 +836,7 @@ const issuesRoute: FastifyPluginAsync = async function (fastify) {
           message: `Issue "${existingIssue.title}" deleted successfully`,
         };
       } catch (error) {
-        fastify.log.error("Error deleting issue:", error);
+        fastify.log.error({ err: error }, "Error deleting issue:");
         return reply.status(500).send({
           success: false,
           error: "Failed to delete issue",

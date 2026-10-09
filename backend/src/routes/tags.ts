@@ -54,7 +54,7 @@ const tagsRoute: FastifyPluginAsync = async function (fastify) {
         count: tags.length,
       };
     } catch (error) {
-      fastify.log.error("Error fetching tags:", error);
+      fastify.log.error({ err: error }, "Error fetching tags:");
       return reply.status(500).send({
         success: false,
         error: "Failed to fetch tags",
@@ -127,7 +127,7 @@ const tagsRoute: FastifyPluginAsync = async function (fastify) {
           message: "Tag created successfully",
         });
       } catch (error) {
-        fastify.log.error("Error creating tag:", error);
+        fastify.log.error({ err: error }, "Error creating tag:");
         return reply.status(500).send({
           success: false,
           error: "Failed to create tag",
@@ -194,7 +194,7 @@ const tagsRoute: FastifyPluginAsync = async function (fastify) {
           message: `Tag "${existingTag.name}" deleted successfully`,
         };
       } catch (error) {
-        fastify.log.error("Error deleting tag:", error);
+        fastify.log.error({ err: error }, "Error deleting tag:");
         return reply.status(500).send({
           success: false,
           error: "Failed to delete tag",
@@ -246,7 +246,7 @@ const tagsRoute: FastifyPluginAsync = async function (fastify) {
           data: tag,
         };
       } catch (error) {
-        fastify.log.error("Error fetching tag:", error);
+        fastify.log.error({ err: error }, "Error fetching tag:");
         return reply.status(500).send({
           success: false,
           error: "Failed to fetch tag",
